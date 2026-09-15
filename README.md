@@ -1,76 +1,117 @@
-# Hindi Legal Document Classification (NLP)
+# Hindi Legal Bail Outcome Classification
 
-A simple, ready-to-run pipeline for classifying Hindi legal documents
-(e.g. case type, or bail granted / denied) using TF-IDF features and a
-classical ML classifier (Linear SVM / Logistic Regression).
+## Problem Statement
+
+Hindi legal documents contain large amounts of unstructured text, making manual analysis time-consuming. This project focuses on automatically predicting the outcome of bail cases from Hindi legal documents.
+
+The objective is to predict whether bail is **Granted** or **Denied** using only the **Facts and Arguments** of a case.
+
+The `judge-opinion` section is excluded from the input to avoid **label leakage**, since it contains the judge's reasoning related to the final decision.
+
+---
 
 ## Dataset
 
-Primary recommendation: **HLDC — Hindi Legal Documents Corpus**
-- 900K+ cleaned Hindi legal documents from Indian district courts
-- Includes a ready-made bail-prediction classification task
-- Repo: https://github.com/Exploration-Lab/HLDC
-- Paper: https://aclanthology.org/2022.findings-acl.278/
+This project uses the **BAIL task from IL-TUR (Indian Legal Text Understanding and Reasoning)**, based on the **Hindi Legal Documents Corpus (HLDC)**.
 
-Alternative / supplementary:
-- **IL-TUR** (multi-task Indian legal benchmark, includes Hindi):
-  https://huggingface.co/datasets/Exploration-Lab/IL-TUR
-- **Indian Legal BERT / MILPaC** (pretrained legal embeddings for Indic languages):
-  https://sites.google.com/site/saptarshighosh/datasets-codes
+**Dataset:**
+https://huggingface.co/datasets/Exploration-Lab/IL-TUR/viewer/bail/train_all?p=1
 
-### Expected data format
+The dataset contains Hindi legal documents with sections including:
 
-This project expects a CSV with two columns:
+* `facts-and-arguments`
+* `judge-opinion`
+* Bail outcome label
 
-```
-text,label
-"‌एफआईआर के अनुसार आरोपी को जमानत...", granted
-"आवेदक द्वारा प्रस्तुत जमानत आवेदन खारिज...", denied
-```
+The classification labels are:
 
-If you're using HLDC directly, clone their repo and follow their
-`data_extraction` scripts to produce this CSV — the raw corpus ships as
-per-district JSON/PDF-derived files, not a flat CSV.
+* `GRANTED`
+* `DENIED`
 
-## Project structure
+### Input and Output
 
-```
-hindi_legal_nlp/
-├── README.md
-├── requirements.txt
-├── baseline_tfidf.py    # TF-IDF + LinearSVC/LogReg classifier — this IS the project
-├── preprocess.py        # Hindi text cleaning utilities
-└── data/
-    └── sample_data.csv  # Small synthetic sample so the code runs out of the box
+```text
+Facts and Arguments
+        |
+        v
+   NLP Processing
+        |
+        v
+   TF-IDF Features
+        |
+        v
+   Linear SVM
+        |
+        v
+Bail Granted / Bail Denied
 ```
 
-## Quick start
+---
 
-```bash
-pip install -r requirements.txt
+## Reference Paper
 
-python baseline_tfidf.py --data data/sample_data.csv
+This project is based on the bail prediction task introduced in:
+
+**HLDC: Hindi Legal Documents Corpus**
+
+The paper introduced a large-scale Hindi legal corpus containing **912,568 legal documents** and explored bail outcome prediction as a downstream task.
+
+**Paper:**
+https://arxiv.org/abs/2204.00806
+
+**Official Repository:**
+https://github.com/Exploration-Lab/HLDC
+
+The original paper experimented with:
+
+* Doc2Vec + SVM
+* Doc2Vec + XGBoost
+* IndicBERT
+* TF-IDF + IndicBERT
+* TextRank + IndicBERT
+* Salience Prediction + IndicBERT
+* Multi-Task Learning
+
+This project implements a **classical NLP baseline** for the same bail prediction task using TF-IDF and Linear SVM.
+
+---
+
+## Methodology
+
+### 1. Facts and Arguments Extraction
+
+The raw document contains multiple sections.
+
+Only the following section is used:
+
+```text
+facts-and-arguments
 ```
 
-Replace `data/sample_data.csv` with your real HLDC-derived CSV once prepared.
-Training takes seconds even on CPU — no GPU needed.
+The following section is excluded:
 
-## How it works
+```text
+judge-opinion
+```
 
-1. **preprocess.py** — normalizes Devanagari Unicode, strips OCR/page-number
-   noise from court documents, optionally removes Hindi stopwords.
-2. **baseline_tfidf.py** — converts cleaned text into TF-IDF vectors
-   (unigrams + bigrams, up to 50K features), trains a Linear SVM
-   (or Logistic Regression) classifier, and reports precision/recall/F1
-   and a confusion matrix on a held-out test split.
+This prevents the model from directly learning information from the judge's reasoning.
 
-## Tuning tips
+---
 
-- `--model logreg` to compare against Logistic Regression instead of SVM.
-- Increase `ngram_range` in `baseline_tfidf.py` to `(1, 3)` if trigram legal
-  phrases (e.g. "जमानत खारिज की") matter for your labels.
-- For imbalanced classes (e.g. rare case types), `class_weight="balanced"`
-  is already set by default.
-- Legal Hindi text often mixes Devanagari with English legal terms (e.g. "FIR",
-  "IPC धारा 302") — preprocessing normalizes but doesn't strip these, since
-  they carry meaning.
+### 2. Text Preprocessing
+
+The extracted Hindi text is cleaned using:
+
+* Unicode NFC normalization
+* Noise removal
+* Whitespace normalization
+
+Stopword removal is currently disabled.
+
+---
+
+### 3. TF-IDF Feature Extraction
+
+The cleaned Hindi text is converted into numerical features using **TF-IDF (Term Frequency-Inverse Document Frequency)**.
+
+Config
