@@ -1,18 +1,9 @@
-"""
-Preprocessing utilities for Hindi legal text.
 
-Handles:
-- Unicode normalization (Devanagari has multiple encodings for the same glyph)
-- Removing boilerplate court-document noise (page numbers, repeated headers)
-- Optional stopword removal
-- Keeping legal-relevant tokens (section numbers, "धारा 302", "FIR", etc.) intact
-"""
 
 import re
 import unicodedata
 
-# Small starter Hindi stopword list. Extend with a fuller list (e.g. from
-# indic-nlp-library or stopwords-iso) for production use.
+
 HINDI_STOPWORDS = {
     "और", "का", "की", "के", "है", "हैं", "था", "थे", "थी", "को", "में",
     "से", "पर", "यह", "वह", "एक", "इस", "उस", "कि", "जो", "भी", "ने",
@@ -20,18 +11,18 @@ HINDI_STOPWORDS = {
     "रही", "रहे", "साथ", "लिए", "द्वारा", "तथा", "एवं",
 }
 
-# Patterns commonly found as noise in scanned/OCR'd Indian court documents.
+
 NOISE_PATTERNS = [
-    r"पृष्ठ\s*संख्या\s*[:\-]?\s*\d+",   # "page number: N"
+    r"पृष्ठ\s*संख्या\s*[:\-]?\s*\d+",   
     r"Page\s*No\.?\s*\d+",
-    r"-{3,}",                            # long dashes from OCR
+    r"-{3,}",                            
     r"_{3,}",
-    r"\s{2,}",                           # collapse multi-spaces (last)
+    r"\s{2,}",                           
 ]
 
 
 def normalize_unicode(text: str) -> str:
-    """Normalize Devanagari unicode to a consistent composed form (NFC)."""
+    "Normalize Devanagari unicode to a consistent composed form (NFC)."
     return unicodedata.normalize("NFC", text)
 
 
@@ -48,7 +39,7 @@ def remove_stopwords(text: str, stopwords: set = HINDI_STOPWORDS) -> str:
 
 
 def clean_text(text: str, drop_stopwords: bool = False) -> str:
-    """Full cleaning pipeline applied before vectorization/tokenization."""
+    "Full cleaning pipeline applied before vectorization/tokenization."
     if not isinstance(text, str):
         return ""
     text = normalize_unicode(text)

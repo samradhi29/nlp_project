@@ -1,18 +1,3 @@
-"""
-Fast baseline for Hindi legal bail outcome classification using
-TF-IDF features with Linear SVM.
-
-IMPORTANT:
-This version uses ONLY `facts-and-arguments`.
-`judge-opinion` is excluded to avoid label leakage.
-
-Usage:
-    python baseline_tfidf.py --data data/train.csv --test_data data/test.csv
-
-Optional Logistic Regression:
-    python baseline_tfidf.py --data data/train.csv --test_data data/test.csv --model logreg
-"""
-
 import argparse
 import re
 import joblib
@@ -28,33 +13,10 @@ from sklearn.metrics import classification_report, confusion_matrix
 from preprocess import clean_text
 
 
-
-
 def extract_facts(text):
-    """
-    Extract only the facts-and-arguments portion from the
-    serialized dictionary stored in the CSV.
-
-    Example input:
-
-    {
-        'facts-and-arguments': array([
-            'Hindi text...',
-            'More Hindi text...'
-        ], dtype=object),
-
-        'judge-opinion': array([
-            'Judge decision...'
-        ], dtype=object)
-    }
-
-    We keep only facts-and-arguments.
-    """
-
     if not isinstance(text, str):
         return ""
 
-    
     start_pattern = r"'facts-and-arguments':\s*array\(\["
 
     start_match = re.search(start_pattern, text)
@@ -64,7 +26,6 @@ def extract_facts(text):
 
     start = start_match.end()
 
- 
     end_pattern = r"\],\s*dtype=object\),\s*'judge-opinion':"
 
     end_match = re.search(end_pattern, text[start:], re.DOTALL)
@@ -73,50 +34,32 @@ def extract_facts(text):
         end = start + end_match.start()
         facts = text[start:end]
     else:
-        
         facts = text[start:]
 
-                                                      
     facts = facts.replace("dtype=object", " ")
-
-                                                                  
     facts = facts.replace("'", " ")
     facts = facts.replace('"', " ")
-
-                                          
     facts = facts.replace("[", " ")
     facts = facts.replace("]", " ")
     facts = facts.replace("(", " ")
     facts = facts.replace(")", " ")
 
-                           
     facts = re.sub(r"\s+", " ", facts).strip()
 
     return facts
 
 
-                                                              
-           
-                                                              
-
 def load_data(path: str, text_col: str, label_col: str) -> pd.DataFrame:
-
     print(f"\nLoading: {path}")
 
     df = pd.read_csv(path)
 
     print(f"Raw documents: {len(df)}")
 
-                                        
     df = df.dropna(subset=[text_col, label_col]).copy()
-
-                                                              
-                                      
-                                                              
 
     df[text_col] = df[text_col].apply(extract_facts)
 
-                                            
     empty_count = (df[text_col].str.strip() == "").sum()
 
     print(f"Empty texts after extraction: {empty_count}")
@@ -126,12 +69,7 @@ def load_data(path: str, text_col: str, label_col: str) -> pd.DataFrame:
         print(df[text_col].iloc[0][:500])
         print()
 
-                                               
     df = df[df[text_col].str.strip() != ""].copy()
-
-                                                              
-                          
-                                                              
 
     df[text_col] = df[text_col].apply(
         lambda t: clean_text(
@@ -140,7 +78,6 @@ def load_data(path: str, text_col: str, label_col: str) -> pd.DataFrame:
         )
     )
 
-                                                            
     df = df[df[text_col].str.strip() != ""].copy()
 
     print(f"Usable documents: {len(df)}")
@@ -148,19 +85,7 @@ def load_data(path: str, text_col: str, label_col: str) -> pd.DataFrame:
     return df
 
 
-                                                              
-             
-                                                              
-
 def build_pipeline(model_name: str = "svm") -> Pipeline:
-
-                              
-     
-                      
-                         
-                      
-                       
-     
     vectorizer = TfidfVectorizer(
         max_features=50000,
         ngram_range=(1, 2),
@@ -168,23 +93,13 @@ def build_pipeline(model_name: str = "svm") -> Pipeline:
         min_df=2,
     )
 
-                                                              
-                
-                                                              
-
     if model_name == "svm":
-
         clf = LinearSVC(
             class_weight="balanced",
             C=1.0
         )
 
-                                                              
-                         
-                                                              
-
     elif model_name == "logreg":
-
         clf = LogisticRegression(
             class_weight="balanced",
             max_iter=2000,
@@ -192,7 +107,6 @@ def build_pipeline(model_name: str = "svm") -> Pipeline:
         )
 
     else:
-
         raise ValueError(
             f"Unknown model_name: {model_name}"
         )
@@ -203,12 +117,7 @@ def build_pipeline(model_name: str = "svm") -> Pipeline:
     ])
 
 
-                                                              
-      
-                                                              
-
 def main():
-
     parser = argparse.ArgumentParser(
         description="Hindi legal bail outcome classification using TF-IDF."
     )
@@ -259,12 +168,7 @@ def main():
 
     args = parser.parse_args()
 
-                                                              
-                       
-                                                              
-
     if args.test_data:
-
         train_df = load_data(
             args.data,
             args.text_col,
@@ -281,13 +185,8 @@ def main():
         print("DATASET SUMMARY")
         print("==========================================")
 
-        print(
-            f"Train documents : {len(train_df)}"
-        )
-
-        print(
-            f"Test documents  : {len(test_df)}"
-        )
+        print(f"Train documents : {len(train_df)}")
+        print(f"Test documents  : {len(test_df)}")
 
         print(
             f"Number of classes: "
@@ -295,14 +194,10 @@ def main():
         )
 
         print("\nTrain label distribution:")
-        print(
-            train_df[args.label_col].value_counts()
-        )
+        print(train_df[args.label_col].value_counts())
 
         print("\nTest label distribution:")
-        print(
-            test_df[args.label_col].value_counts()
-        )
+        print(test_df[args.label_col].value_counts())
 
         X_train = train_df[args.text_col]
         y_train = train_df[args.label_col]
@@ -311,20 +206,15 @@ def main():
         y_test = test_df[args.label_col]
 
     else:
-
         df = load_data(
             args.data,
             args.text_col,
             args.label_col
         )
 
-        print("")
-        print("DATASET SUMMARY")
-        print("")
+        print("\nDATASET SUMMARY\n")
 
-        print(
-            f"Documents : {len(df)}"
-        )
+        print(f"Documents : {len(df)}")
 
         print(
             f"Classes   : "
@@ -332,9 +222,7 @@ def main():
         )
 
         print("\nLabel distribution:")
-        print(
-            df[args.label_col].value_counts()
-        )
+        print(df[args.label_col].value_counts())
 
         X_train, X_test, y_train, y_test = train_test_split(
             df[args.text_col],
@@ -343,10 +231,6 @@ def main():
             random_state=42,
             stratify=df[args.label_col],
         )
-
-                                                              
-                    
-                                                              
 
     print("\n==========================================")
     print("MODEL")
@@ -359,13 +243,7 @@ def main():
     print("Input: facts-and-arguments ONLY")
     print("Judge opinion: EXCLUDED")
 
-    pipeline = build_pipeline(
-        args.model
-    )
-
-                                                              
-           
-                                                              
+    pipeline = build_pipeline(args.model)
 
     print("\n==========================================")
     print("TRAINING")
@@ -378,21 +256,11 @@ def main():
 
     print("Training completed.")
 
-                                                              
-                
-                                                              
-
     print("\n==========================================")
     print("EVALUATION")
     print("==========================================")
 
-    y_pred = pipeline.predict(
-        X_test
-    )
-
-                                                              
-                           
-                                                              
+    y_pred = pipeline.predict(X_test)
 
     print("\n=== Classification Report ===")
 
@@ -403,10 +271,6 @@ def main():
         )
     )
 
-                                                              
-                      
-                                                              
-
     print("=== Confusion Matrix ===")
 
     print(
@@ -416,8 +280,6 @@ def main():
         )
     )
 
-
-
     joblib.dump(
         pipeline,
         args.out
@@ -426,8 +288,6 @@ def main():
     print(
         f"\nModel saved to: {args.out}"
     )
-
-
 
 
 if __name__ == "__main__":
