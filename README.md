@@ -2,9 +2,7 @@
 
 ## Problem Statement
 
-This project predicts the outcome of Hindi bail cases as **GRANTED** or **DENIED** using only the **Facts and Arguments** section of legal documents.
-
-The `judge-opinion` section is excluded to avoid **label leakage**, as it may contain reasoning directly related to the final decision.
+Our project focuses on using Natural Language Processing and Machine Learning to classify Hindi legal bail documents as either GRANTED or DENIED. Since legal documents contain large amounts of information, manually analyzing them can be time-consuming. We aim to automatically identify patterns from the facts and arguments presented in the case and use them to predict the bail outcome. However, we deliberately exclude the judge’s opinion and final decision because including them could cause data leakage, allowing the model to simply learn the answer rather than understand the underlying case information
 
 ---
 
