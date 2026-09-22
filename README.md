@@ -18,7 +18,11 @@ The Hindi Legal Documents Corpus (HLDC) is a large Hindi legal dataset created f
 For the bail classification task, the researchers extracted 340,280 bail-related documents from HLDC. These documents were structured into sections such as facts and arguments and judge opinion, with the final bail decision labelled as GRANTED or DENIED.
 
 ---
+For reference, we are using the **HLDC (Hindi Legal Documents Corpus)** research paper as our base paper. It contains data collected from the Indian e-Courts system and presents a solution approach that we have taken as a reference to follow in our project.
 
+One of the main reasons for choosing this direction is that we found the use of AI in the field of the judiciary is not as widespread as it should be compared to other domains. While exploring different areas, we noticed a lack of AI-based solutions and research focused on supporting the Indian judicial system.
+
+Therefore, we decided to explore this direction and understand how AI can be used as a supporting tool for legal document analysis and decision assistance. We are following the ideas and methodology proposed in the HLDC research paper as the foundation for our work.
 ## Pipeline
 
 ```text
