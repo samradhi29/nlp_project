@@ -15,7 +15,9 @@ The project uses the **BAIL task from IL-TUR**, based on the **Hindi Legal Docum
 **Dataset:**
 https://huggingface.co/datasets/Exploration-Lab/IL-TUR/viewer/bail/train_all?p=1
 
-HLDC contains **912,568 Hindi legal documents** collected from Uttar Pradesh district courts between **May 2019 and May 2021**. The bail task contains **GRANTED** and **DENIED** outcomes.
+he Hindi Legal Documents Corpus (HLDC) is a large Hindi legal dataset created from district court documents of Uttar Pradesh, India. The original corpus contains 912,568 Hindi legal documents, collected from the e-Courts website for cases from May 2019 to May 2021.
+
+For the bail classification task, the researchers extracted 340,280 bail-related documents from HLDC. These documents were structured into sections such as facts and arguments and judge opinion, with the final bail decision labelled as GRANTED or DENIED.
 
 ---
 
